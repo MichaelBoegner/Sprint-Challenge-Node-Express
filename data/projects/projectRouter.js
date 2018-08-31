@@ -4,21 +4,30 @@ const router = express.Router();
 
 
 
+//============= Middleware Handlers ===================
 
-function projectCheck(req, res, next){
+function projectCheckName(req, res, next){
     let [body] = [req.body]
 
-    if(body.name.length > 128) {
+    if(body.name.length <= 128) {
         next(); 
     } else {
         res.status(400).json({error: "Property 'name' cannot be more than 128 characters long."})
         }
+}
+
+function projectCheckId(req, res, next){
+    let [body] = [req.body]
 
     if(!body.id){
         next(); 
     } else {
         res.status(400).json({error: "No Project Id is required."})
         } 
+}
+
+function projectCheckDescription(req, res, next){
+    let [body] = [req.body]
 
     if(body.description){
         next(); 
@@ -27,6 +36,8 @@ function projectCheck(req, res, next){
         }     
 }
 
+
+//============= Router Handlers ===================
 
 router.get('/:id', (req, res) => {
     let [id] = [req.params.id]
@@ -52,7 +63,7 @@ router.get('/actions/:id', (req, res) => {
         })
 })
 
-router.post('/', projectCheck, (req, res) => {
+router.post('/', projectCheckName, projectCheckId, projectCheckDescription, (req, res) => {
     let [body] = [req.body]
     
     projectModel.insert(body)
@@ -64,8 +75,8 @@ router.post('/', projectCheck, (req, res) => {
         })
 })
 
-router.put('/:id', projectCheck, (req, res) => {
-    let [id, body] = [id, req.body]
+router.put('/:id', projectCheckName, projectCheckId, projectCheckDescription, (req, res) => {
+    let [id, body] = [req.params.id, req.body]
 
     projectModel.update(id, body)
         .then(projects => { 
@@ -87,6 +98,7 @@ router.delete('/:id', (req, res) => {
             res.status(500).json({error: "The project could not be deleted."})
         })
 })
+
 
 module.exports = router; 
 
